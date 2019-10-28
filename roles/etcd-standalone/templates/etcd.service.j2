@@ -1,0 +1,28 @@
+[Unit]
+Description=Etcd Key-Value Store
+Documentation=https://github.com/etcd-io/etcd
+After=network.target
+
+[Service]
+User=etcd
+Type=notify
+Environment=PEERS="etcd-0=http://{{ ansible_default_ipv4.address }}:2380"
+ExecStart=/usr/local/bin/etcd --name etcd-0 \
+              --listen-peer-urls http://0.0.0.0:2380 \
+              --listen-client-urls http://0.0.0.0:2379 \
+              --advertise-client-urls http://{{ ansible_default_ipv4.address }}:2379 \
+              --initial-advertise-peer-urls http://{{ ansible_default_ipv4.address }}:2380 \
+              --initial-cluster-token etcd-standalone-1 \
+              --initial-cluster ${PEERS} \
+              --initial-cluster-state new \
+              --heartbeat-interval 1000 \
+              --election-timeout 5000 \
+              --snapshot-count 5000 \
+              --data-dir /var/lib/etcd
+
+Restart=always
+RestartSec=10s
+LimitNOFILE=40000
+
+[Install]
+WantedBy=multi-user.target

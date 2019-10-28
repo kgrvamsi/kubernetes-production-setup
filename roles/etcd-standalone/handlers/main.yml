@@ -1,0 +1,16 @@
+---
+# handlers file for etcd-standalone
+- name: Start ETCD
+  systemd:
+    state: started
+    enabled: yes
+    name: etcd
+
+- name: Reload ETCD
+  systemd:
+    name: etcd
+    state: reloaded
+
+- name: Daemon Reload
+  systemd:
+    daemon_reload: yes

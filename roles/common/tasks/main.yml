@@ -1,0 +1,39 @@
+---
+# tasks file for common
+- name: Apt Update
+  apt:
+    update_cache: true
+  register: aptout
+
+- name: Installing Packages
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - git
+      - python-pip
+      - build-essential
+      - wget
+  register: pkginstall
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Downloading Golang Package
+  get_url:
+    url: https://dl.google.com/go/go1.12.12.linux-amd64.tar.gz
+    dest: /opt/go1.12.12.linux-amd64.tar.gz
+    mode: '0777'
+
+- name: Extract go1.12.12.linux-amd64.tar.gz into /usr/local
+  unarchive:
+    src: /opt/go1.12.12.linux-amd64.tar.gz
+    dest: /usr/local
+    remote_src: yes
+
+- name: Inserting Go path to /etc/profile
+  lineinfile:
+    path: /etc/profile
+    line: export PATH=$PATH:/usr/local/go/bin:/root/go/bin
+
+- name: Downloading cfssl tool
+  command: /usr/local/go/bin/go get -u github.com/cloudflare/cfssl/cmd/...
+  changed_when: False

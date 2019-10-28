@@ -1,0 +1,66 @@
+---
+# tasks file for etcd-standalone
+- name: Downloading ETCD Package
+  get_url:
+    url: "{{ GOOGLE_URL }}/{{ ETCD_VER }}/etcd-{{ ETCD_VER }}-linux-amd64.tar.gz"
+    dest: /opt/etcd-{{ ETCD_VER }}-linux-amd64.tar.gz
+    mode: '0777'
+
+- name: Extracting etcd-{{ ETCD_VER }}-linux-amd64.tar.gz into /opt
+  unarchive:
+    src: /opt/etcd-{{ ETCD_VER }}-linux-amd64.tar.gz
+    dest: /opt
+    remote_src: yes
+
+- name: Creating ETCD system group
+  group:
+    name: etcd
+    state: present
+    system: yes
+
+- name: Creating ETCD user
+  user:
+    name: etcd
+    comment: John Doe
+    system: yes
+    group: etcd
+
+- name: Copy file with owner and permissions
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: yes
+    owner: etcd
+    group: etcd
+    mode: '0755'
+  with_items:
+    - { src: '/opt/etcd-{{ ETCD_VER }}-linux-amd64/etcd', dest: '/usr/local/bin/' }
+    - { src: '/opt/etcd-{{ ETCD_VER }}-linux-amd64/etcdctl', dest: '/usr/local/bin/' }
+
+
+- name: Creating the Config directory for ETCD
+  file:
+    path: /etc/etcd
+    state: directory
+    mode: '0755'
+
+- name: Creating the Data directory for ETCD
+  file:
+    path: /var/lib/etcd
+    state: directory
+    recurse: yes
+    mode: '0755'
+
+- name: Change file ownership, group and permissions for ETCD Data Directory
+  file:
+    path: /var/lib/etcd
+    owner: etcd
+    group: etcd
+    recurse: yes
+    mode: '0755'
+
+- name: Copying the etcd.service file to /etc/systemd/system
+  template: 
+    src: etcd.service.j2
+    dest: /etc/systemd/system/etcd.service
+  notify: Start ETCD

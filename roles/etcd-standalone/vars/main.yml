@@ -1,0 +1,5 @@
+---
+# vars file for etcd-standalone
+ETCD_VER: "v3.4.3"
+GOOGLE_URL: "https://storage.googleapis.com/etcd"
+GITHUB_URL: "https://github.com/etcd-io/etcd/releases/download"

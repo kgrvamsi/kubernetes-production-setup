@@ -1,0 +1,18 @@
+[etcd-standalone]
+etcd-master ansible_host=192.168.100.2 ansible_ssh_port=22 ansible_connection=ssh  ansible_user=vagrant
+
+[etcd-cluster]
+etcd-master ansible_host=192.168.100.2 ansible_ssh_port=22 ansible_connection=ssh  ansible_user=vagrant
+etcd-slave01 ansible_host=192.168.100.2 ansible_ssh_port=22 ansible_connection=ssh  ansible_user=vagrant
+etcd-slave02 ansible_host=192.168.100.2 ansible_ssh_port=22 ansible_connection=ssh  ansible_user=vagrant
+
+[k8-master]
+k8-master ansible_host=192.168.100.2 ansible_ssh_port=22 ansible_connection=ssh  ansible_user=vagrant
+
+[k8-workers]
+worker1 ansible_host=192.168.100.2 ansible_ssh_port=22 ansible_connection=ssh  ansible_user=vagrant
+worker2 ansible_host=192.168.100.2 ansible_ssh_port=22 ansible_connection=ssh  ansible_user=vagrant
+worker3 ansible_host=192.168.100.2 ansible_ssh_port=22 ansible_connection=ssh  ansible_user=vagrant
+worker4 ansible_host=192.168.100.2 ansible_ssh_port=22 ansible_connection=ssh  ansible_user=vagrant
+
+[fed-master]

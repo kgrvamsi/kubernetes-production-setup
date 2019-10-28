@@ -1,0 +1,6 @@
+---
+- hosts: etcd-standalone
+  gather_facts: False
+  roles:
+    - common
+    - etcd-standalone
