@@ -1,2 +1,7 @@
 ---
 # vars file for kube-api
+K8_CLUSTER_NAME: "Cluster-01"
+K8_VER: "v1.16.2"
+KUBERNETES_HOSTNAMES: kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster,kubernetes.svc.cluster.local
+SERVICE_CLUSTER_IP_RANGE: 10.32.0.0/24
+ETCD_ENDPOINT: "https://172.28.128.24:2379"

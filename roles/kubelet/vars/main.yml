@@ -1,2 +1,4 @@
 ---
 # vars file for kubelet
+CRICTL_VERSION: "v1.16.0"
+CRITEST_VERSION: "v1.16.0"

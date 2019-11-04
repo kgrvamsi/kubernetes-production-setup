@@ -1,0 +1,6 @@
+---
+- hosts: etcd-cluster
+  gather_facts: False
+  roles:
+    - common
+    - etcd-cluster

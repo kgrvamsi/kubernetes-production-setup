@@ -2,14 +2,24 @@
 dependency:
   name: galaxy
 driver:
-  name: docker
+  name: vagrant
+  provider:
+    name: virtualbox
 lint:
   name: yamllint
 platforms:
   - name: instance
-    image: ubuntu:16.04
+    box: ubuntu/xenial64
+    memory: 1024
+    cpus: 1
+    interfaces:
+      - auto_config: true
+        network_name: private_network
+        type: dhcp
 provisioner:
   name: ansible
+  options:
+    v: True
   lint:
     name: ansible-lint
 verifier:

@@ -1,0 +1,40 @@
+[Unit]
+Description=Kubernetes API Server
+Documentation=https://github.com/kubernetes/kubernetes
+
+[Service]
+ExecStart=/usr/local/bin/kube-apiserver \
+  --advertise-address={{ ansible_enp0s8.ipv4.address }} \
+  --allow-privileged=true \
+  --apiserver-count=3 \
+  --audit-log-maxage=30 \
+  --audit-log-maxbackup=3 \
+  --audit-log-maxsize=100 \
+  --audit-log-path=/var/log/audit.log \
+  --authorization-mode=Node,RBAC \
+  --bind-address=0.0.0.0 \
+  --client-ca-file=/opt/certs/ca.pem \
+  --enable-admission-plugins=NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \
+  --etcd-cafile=/opt/certs/ca.pem \
+  --etcd-certfile=/opt/certs/kubernetes.pem \
+  --etcd-keyfile=/opt/certs/kubernetes-key.pem \
+  --etcd-servers=https://{{ ansible_enp0s8.ipv4.address }}:2379 \
+  --event-ttl=1h \
+  --encryption-provider-config=/opt/configs/encryption-config.yaml \
+  --kubelet-certificate-authority=/opt/certs/ca.pem \
+  --kubelet-client-certificate=/opt/certs/kubernetes.pem \
+  --kubelet-client-key=/opt/certs/kubernetes-key.pem \
+  --kubelet-https=true \
+  --runtime-config=api/all \
+  --service-account-key-file=/opt/certs/service-account.pem \
+  --service-cluster-ip-range=10.32.0.0/24 \
+  --service-node-port-range=30000-32767 \
+  --secure-port=6443 \
+  --tls-cert-file=/opt/certs/kubernetes.pem \
+  --tls-private-key-file=/opt/certs/kubernetes-key.pem \
+  --v=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

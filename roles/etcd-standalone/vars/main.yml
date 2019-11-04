@@ -1,5 +1,6 @@
 ---
 # vars file for etcd-standalone
 ETCD_VER: "v3.4.3"
+KUBERNETES_HOSTNAMES: kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster,kubernetes.svc.cluster.local
 GOOGLE_URL: "https://storage.googleapis.com/etcd"
 GITHUB_URL: "https://github.com/etcd-io/etcd/releases/download"

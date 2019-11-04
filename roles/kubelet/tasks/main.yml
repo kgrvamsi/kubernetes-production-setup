@@ -1,2 +1,15 @@
 ---
 # tasks file for kubelet
+- name: Downloading Kubernetes {{K8_VER}} Packages - Kubelet
+  become: yes
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/release/{{K8_VER}}/bin/linux/amd64/kubelet
+    dest: /usr/local/bin
+    mode: '0777'
+
+- name: Downloading Kubernetes {{K8_VER}} Packages - Kubelet
+  become: yes
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/release/{{K8_VER}}/bin/linux/amd64/kube-proxy
+    dest: /usr/local/bin
+    mode: '0777'

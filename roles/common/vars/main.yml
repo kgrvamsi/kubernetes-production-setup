@@ -1,2 +1,3 @@
 ---
 # vars file for common
+K8_VER: "v1.16.2"

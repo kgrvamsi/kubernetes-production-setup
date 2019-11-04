@@ -1,2 +1,19 @@
 ---
 # handlers file for kube-scheduler
+- name: Start Kube-Scheduler
+  become: yes
+  systemd:
+    state: started
+    enabled: yes
+    name: kube-scheduler
+
+- name: Reload Kube-Scheduler
+  become: yes
+  systemd:
+    name: kube-scheduler
+    state: reloaded
+
+- name: Daemon Reload
+  become: yes
+  systemd:
+    daemon_reload: yes

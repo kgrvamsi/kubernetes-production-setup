@@ -1,11 +1,13 @@
 ---
 # tasks file for common
 - name: Apt Update
+  become: yes
   apt:
     update_cache: true
-  register: aptout
+  changed_when: False
 
 - name: Installing Packages
+  become: yes
   apt:
     name: "{{ packages }}"
   vars:
@@ -18,22 +20,95 @@
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
 - name: Downloading Golang Package
+  become: yes
   get_url:
     url: https://dl.google.com/go/go1.12.12.linux-amd64.tar.gz
     dest: /opt/go1.12.12.linux-amd64.tar.gz
     mode: '0777'
 
+- name: Downloading Kubernetes {{K8_VER}} Packages - Kubectl
+  become: yes
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/release/{{K8_VER}}/bin/linux/amd64/kubectl
+    dest: /usr/local/bin
+    mode: '0777'
+
 - name: Extract go1.12.12.linux-amd64.tar.gz into /usr/local
+  become: yes
   unarchive:
     src: /opt/go1.12.12.linux-amd64.tar.gz
     dest: /usr/local
     remote_src: yes
 
 - name: Inserting Go path to /etc/profile
+  become: yes
   lineinfile:
     path: /etc/profile
     line: export PATH=$PATH:/usr/local/go/bin:/root/go/bin
 
-- name: Downloading cfssl tool
-  command: /usr/local/go/bin/go get -u github.com/cloudflare/cfssl/cmd/...
+- name: Downloading Cfssl
+  become: yes
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-the-hard-way/cfssl/linux/cfssl
+    dest: /usr/local/bin/cfssl
+    mode: '0777'
+
+- name: Downloading Cfssl Json
+  become: yes
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-the-hard-way/cfssl/linux/cfssljson
+    dest: /usr/local/bin/cfssljson
+    mode: '0777'
+
+- name: Creating ETCD system group
+  become: yes
+  group:
+    name: etcd
+    state: present
+    system: yes
+
+- name: Creating ETCD user
+  become: yes
+  user:
+    name: etcd
+    comment: Etcd User
+    system: yes
+    group: etcd
+
+- name: Creating the Certs directory
+  become: yes
+  file:
+    path: /opt/certs
+    state: directory
+    owner: etcd
+    group: etcd
+    recurse: yes
+    mode: '0755'
   changed_when: False
+
+- name: Creating the Configs directory
+  become: yes
+  file:
+    path: /opt/configs
+    state: directory
+    recurse: yes
+    mode: '0755'
+  changed_when: False
+
+- name: Copying the ca-config file to /opt/certs
+  become: yes
+  template:
+    src: ca-config.json.j2
+    dest: /opt/certs/ca-config.json
+
+- name: Copying the ca-csr file to /opt/certs
+  become: yes
+  template:
+    src: ca-csr.json.j2
+    dest: /opt/certs/ca-csr.json
+
+- name: Change the working directory to /opt/certs and run the cfssl command.
+  become: yes
+  shell: cfssl gencert -initca ca-csr.json | cfssljson -bare ca -
+  args:
+    chdir: /opt/certs

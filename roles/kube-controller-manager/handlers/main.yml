@@ -1,2 +1,19 @@
 ---
 # handlers file for kube-controller-manager
+- name: Start Kube-Controller-Manager
+  become: yes
+  systemd:
+    state: started
+    enabled: yes
+    name: kube-controller-manager
+
+- name: Reload Kube-Controller-Manager
+  become: yes
+  systemd:
+    name: kube-controller-manager
+    state: reloaded
+
+- name: Daemon Reload
+  become: yes
+  systemd:
+    daemon_reload: yes

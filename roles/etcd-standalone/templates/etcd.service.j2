@@ -6,18 +6,25 @@ After=network.target
 [Service]
 User=etcd
 Type=notify
-Environment=PEERS="etcd-0=http://{{ ansible_default_ipv4.address }}:2380"
-ExecStart=/usr/local/bin/etcd --name etcd-0 \
-              --listen-peer-urls http://0.0.0.0:2380 \
-              --listen-client-urls http://0.0.0.0:2379 \
-              --advertise-client-urls http://{{ ansible_default_ipv4.address }}:2379 \
-              --initial-advertise-peer-urls http://{{ ansible_default_ipv4.address }}:2380 \
+Environment=PEERS=etcd-standalone=https://{{ ansible_default_ipv4.address }}:2380
+ExecStart=/usr/local/bin/etcd --name etcd-standalone \
+              --cert-file=/opt/certs/kubernetes.pem \
+              --key-file=/opt/certs/kubernetes-key.pem \
+              --peer-cert-file=/opt/certs/kubernetes.pem \
+              --peer-key-file=/opt/certs/kubernetes-key.pem \
+              --trusted-ca-file=/opt/certs/ca.pem \
+              --peer-trusted-ca-file=/opt/certs/ca.pem \
+              --listen-peer-urls https://0.0.0.0:2380 \
+              --listen-client-urls="https://127.0.0.1:2379, https://{{ ansible_enp0s8.ipv4.address}}:2379, https://{{ ansible_default_ipv4.address }}:2379"  \
+              --advertise-client-urls https://{{ ansible_enp0s8.ipv4.address}}:2379 \
+              --initial-advertise-peer-urls https://{{ ansible_default_ipv4.address }}:2380 \
               --initial-cluster-token etcd-standalone-1 \
               --initial-cluster ${PEERS} \
               --initial-cluster-state new \
+              --auto-compaction-retention=3 \
               --heartbeat-interval 1000 \
               --election-timeout 5000 \
-              --snapshot-count 5000 \
+              --snapshot-count 10000 \
               --data-dir /var/lib/etcd
 
 Restart=always

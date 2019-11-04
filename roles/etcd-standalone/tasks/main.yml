@@ -1,31 +1,21 @@
 ---
 # tasks file for etcd-standalone
 - name: Downloading ETCD Package
+  become: yes
   get_url:
     url: "{{ GOOGLE_URL }}/{{ ETCD_VER }}/etcd-{{ ETCD_VER }}-linux-amd64.tar.gz"
     dest: /opt/etcd-{{ ETCD_VER }}-linux-amd64.tar.gz
     mode: '0777'
 
 - name: Extracting etcd-{{ ETCD_VER }}-linux-amd64.tar.gz into /opt
+  become: yes
   unarchive:
     src: /opt/etcd-{{ ETCD_VER }}-linux-amd64.tar.gz
     dest: /opt
     remote_src: yes
 
-- name: Creating ETCD system group
-  group:
-    name: etcd
-    state: present
-    system: yes
-
-- name: Creating ETCD user
-  user:
-    name: etcd
-    comment: John Doe
-    system: yes
-    group: etcd
-
 - name: Copy file with owner and permissions
+  become: yes
   copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -38,20 +28,36 @@
     - { src: '/opt/etcd-{{ ETCD_VER }}-linux-amd64/etcdctl', dest: '/usr/local/bin/' }
 
 
-- name: Creating the Config directory for ETCD
+- name: Creating the Config directory
+  become: yes
   file:
     path: /etc/etcd
     state: directory
     mode: '0755'
 
-- name: Creating the Data directory for ETCD
+- name: Creating the Data directory
+  become: yes
   file:
     path: /var/lib/etcd
     state: directory
     recurse: yes
     mode: '0755'
+  changed_when: False
+
+- name: Copying the etcd-csr file to /opt/certs
+  become: yes
+  template:
+    src: kubernetes-csr.json.j2
+    dest: /opt/certs/kubernetes-csr.json
+
+- name: Generating the Kube-API-Server Keys
+  become: yes
+  shell: cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -hostname=10.32.0.1,10.240.0.10,10.240.0.11,10.240.0.12,{{ ansible_default_ipv4.address }},{{ ansible_enp0s8.ipv4.address}},127.0.0.1,{{ KUBERNETES_HOSTNAMES }} -profile=kubernetes kubernetes-csr.json | cfssljson -bare kubernetes && chmod 755 *
+  args:
+    chdir: /opt/certs
 
 - name: Change file ownership, group and permissions for ETCD Data Directory
+  become: yes
   file:
     path: /var/lib/etcd
     owner: etcd
@@ -60,7 +66,8 @@
     mode: '0755'
 
 - name: Copying the etcd.service file to /etc/systemd/system
-  template: 
+  become: yes
+  template:
     src: etcd.service.j2
     dest: /etc/systemd/system/etcd.service
   notify: Start ETCD

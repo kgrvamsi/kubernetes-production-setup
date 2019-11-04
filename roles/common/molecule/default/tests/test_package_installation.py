@@ -25,12 +25,3 @@ def test_hosts_file(host):
 def test_pkg(host, pkg):
     package = host.package(pkg)
     assert package.is_installed
-
-
-@pytest.mark.parametrize('folder', [
-  '/usr/local/go'
-])
-def test_check_go_installation(host, folder):
-    downld_file = host.file(folder)
-
-    assert downld_file.is_directory

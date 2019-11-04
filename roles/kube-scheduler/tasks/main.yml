@@ -1,2 +1,57 @@
 ---
 # tasks file for kube-scheduler
+- name: Downloading Kubernetes {{K8_VER}} Packages - Scheduler
+  become: yes
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/release/{{K8_VER}}/bin/linux/amd64/kube-scheduler
+    dest: /usr/local/bin
+    mode: '0777'
+
+- name: Copying the kube-scheduler-csr file to /opt/certs
+  become: yes
+  template:
+    src: kube-scheduler-csr.json.j2
+    dest: /opt/certs/kube-scheduler-csr.json
+
+- name: Copying the kube-scheduler.yaml file to /opt/configs
+  become: yes
+  template:
+    src: kube-scheduler.yaml.j2
+    dest: /opt/configs/kube-scheduler.yaml
+
+- name: Generating the Kube-Scheduler Keys
+  become: yes
+  shell: cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes kube-scheduler-csr.json | cfssljson -bare kube-scheduler && chmod 755 *
+  args:
+    chdir: /opt/certs
+
+- name: Generating the Kube-Scheduler Config - Set Cluster
+  become: yes
+  shell: kubectl config set-cluster {{ K8_CLUSTER_NAME }} --certificate-authority=/opt/certs/ca.pem --embed-certs=true --server=https://{{ ansible_enp0s8.ipv4.address }}:6443 --kubeconfig=kube-scheduler.kubeconfig
+  args:
+    chdir: /opt/configs
+
+- name: Generating the Kube-Scheduler Config - Set Credentials
+  become: yes
+  shell: kubectl config set-credentials system:kube-scheduler --client-certificate=/opt/certs/kube-scheduler.pem --client-key=/opt/certs/kube-scheduler-key.pem  --embed-certs=true --kubeconfig=kube-scheduler.kubeconfig
+  args:
+    chdir: /opt/configs
+
+- name: Generating the Kube-Scheduler Config - Set Context
+  become: yes
+  shell: kubectl config set-context default --cluster={{ K8_CLUSTER_NAME }} --user=system:kube-scheduler  --kubeconfig=kube-scheduler.kubeconfig
+  args:
+    chdir: /opt/configs
+
+- name: Generating the Kube-Controller-Manager Config - Use Context
+  become: yes
+  shell: kubectl config use-context default --kubeconfig=kube-scheduler.kubeconfig
+  args:
+    chdir: /opt/configs
+
+- name: Copying the kube-scheduler.service file to /etc/systemd/system
+  become: yes
+  template:
+    src: kube-scheduler.service.j2
+    dest: /etc/systemd/system/kube-scheduler.service
+  notify: Start Kube-Scheduler

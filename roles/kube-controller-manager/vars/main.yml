@@ -1,2 +1,5 @@
 ---
 # vars file for kube-controller-manager
+K8_CLUSTER_NAME: "Cluster-01"
+SERVICE_CLUSTER_IP_RANGE: 10.32.0.0/24
+K8_VER: "v1.16.2"

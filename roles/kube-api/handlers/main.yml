@@ -1,2 +1,19 @@
 ---
 # handlers file for kube-api
+- name: Start Kube-API-Server
+  become: yes
+  systemd:
+    state: started
+    enabled: yes
+    name: kube-apiserver
+
+- name: Reload Kube-API-Server
+  become: yes
+  systemd:
+    name: kube-apiserver
+    state: reloaded
+
+- name: Daemon Reload
+  become: yes
+  systemd:
+    daemon_reload: yes

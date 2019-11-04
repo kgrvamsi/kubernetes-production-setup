@@ -1,2 +1,8 @@
 ---
 # tasks file for kube-proxy
+- name: Downloading Kubernetes {{K8_VER}} Packages - Kube-Proxy
+  become: yes
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/release/{{K8_VER}}/bin/linux/amd64/kube-proxy
+    dest: /usr/local/bin
+    mode: '0777'
